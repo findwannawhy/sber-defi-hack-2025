@@ -1,0 +1,20 @@
+#Ignore results
+results/
+
+#Ignore DS_Store
+.DS_Store
+
+#Ignore pycache
+*.pyc
+__pycache__
+
+#Ignore vscode
+.vscode/
+
+#Ignore default remote datasets
+dataset/solidiFI
+
+#Ignore PyCharm files
+venv/
+.idea/
+results/*.*

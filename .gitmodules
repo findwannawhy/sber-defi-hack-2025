@@ -1,0 +1,3 @@
+[submodule "Backend/app/audit/smartbugs"]
+	path = Backend/app/audit/smartbugs
+	url = https://github.com/smartbugs/smartbugs.git

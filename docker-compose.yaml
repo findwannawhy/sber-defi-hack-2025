@@ -1,0 +1,74 @@
+services:
+  db:
+    container_name: bot_postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: bot_db
+    image: postgres:15
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    container_name: backend_service
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile  # Предполагаем имя Dockerfile, создайте его при необходимости
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./Backend:/app
+    env_file:
+      - ./Backend/.env
+    depends_on:
+      - db
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload --proxy-headers
+
+  bot:
+    container_name: bot_service
+    build:
+      context: ./Bot
+      dockerfile: Dockerfile  # Предполагаем имя Dockerfile, создайте его при необходимости
+    volumes:
+      - ./Bot:/app
+    ports:
+      - "8080:8080"
+    env_file:
+      - ./Bot/.env
+    depends_on:
+      - db
+    command: python bot.py
+
+  web:
+    container_name: web_service
+    build:
+      context: ./Web
+      dockerfile: Dockerfile  # Предполагаем имя Dockerfile, создайте его при необходимости
+    ports:
+      - "3000:5173" # Стандартный порт для веб-приложений, измените при необходимости
+    volumes:
+      - ./Web:/app
+      - /app/node_modules # Исключаем перезапись node_modules хостом
+    env_file:
+      - ./Web/.env
+    #depends_on:
+    #  - backend
+    command: pnpm run dev --host # Добавляем флаг --host
+
+  updates:
+    container_name: updates_service
+    build:
+      context: ./Updates
+      dockerfile: Dockerfile
+    volumes:
+      - ./Updates:/app
+      - /app/node_modules
+    env_file: # Раскомментируйте и укажите путь, если нужен файл с переменными окружения
+      - ./Updates/.env
+    # depends_on: # Раскомментируйте, если сервис зависит от других (например, db или backend)
+    #  - db
+
+volumes:
+  postgres_data: # Определяем том для сохранения данных PostgreSQL
